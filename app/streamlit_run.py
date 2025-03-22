@@ -1,9 +1,15 @@
-import streamlit as st
-import requests
 import json
 
+import requests
+import streamlit as st
+
+from app.config.settings import Settings
+
+setttings = Settings()
+
+
 # FastAPI backend URL
-FASTAPI_URL = "http://0.0.0.0:8000"  # Update this if your FastAPI server is hosted elsewhere
+FASTAPI_URL = f"http://{setttings.FASTAPI_HOST}:{setttings.FASTAPI_PORT}"  # Update this if your FastAPI server is hosted elsewhere
 
 # Streamlit App Title
 st.title("PDF Question Answering System")
@@ -23,7 +29,9 @@ if uploaded_file is not None:
     if response.status_code == 200:
         st.sidebar.success("PDF uploaded and indexed successfully!")
     else:
-        st.sidebar.error(f"Failed to upload PDF: {response.json().get('detail', 'Unknown error')}")
+        st.sidebar.error(
+            f"Failed to upload PDF: {response.json().get('detail', 'Unknown error')}"
+        )
 
 # Main section for asking questions
 st.header("Ask Questions")
@@ -51,8 +59,8 @@ if st.button("Get Answers"):
             st.subheader("Answers")
 
             for elem in answers:
-                st.write(f"**Q:** {elem.get("question", "")}")
-                st.write(f"**A:** {elem.get("answer", "")}")
+                st.write(f"**Q:** {elem.get('question', '')}")
+                st.write(f"**A:** {elem.get('answer', '')}")
                 st.write("---")
 
             # Option to download answers as JSON
@@ -63,4 +71,6 @@ if st.button("Get Answers"):
                 mime="application/json",
             )
         else:
-            st.error(f"Failed to get answers: {response.json().get('detail', 'Unknown error')}")
+            st.error(
+                f"Failed to get answers: {response.json().get('detail', 'Unknown error')}"
+            )
