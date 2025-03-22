@@ -96,13 +96,14 @@ async def upload_pdf(
 
 
 @app.post("/ask", response_model=AnswerResponse)
-async def ask_questions(body: QuestionRequest):
+async def ask_questions(
+    body: QuestionRequest, vector_store: VectorStore = Depends(get_vector_store)
+):
     questions = body.questions
     try:
         logger.info(f"Received question answering request with questions: {questions}")
 
         # Check if the vector store is initialized
-        vector_store = get_vector_store()
         if not vector_store.is_initialized():
             error_msg = "No PDF has been indexed. Please upload and index a PDF first."
             logger.warning(error_msg)
@@ -124,7 +125,7 @@ async def ask_questions(body: QuestionRequest):
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-if __name__ == "__main__":
+def start_server():
     logger.info(
         f"Starting FastAPI server on {settings.FASTAPI_HOST}:{settings.FASTAPI_PORT}"
     )
@@ -134,3 +135,7 @@ if __name__ == "__main__":
         port=settings.FASTAPI_PORT,
         reload=True,  # Enable auto-reload
     )
+
+
+if __name__ == "__main__":
+    start_server()
