@@ -2,41 +2,71 @@ from langchain_core.prompts.chat import ChatPromptTemplate
 
 
 def get_grade_prompt() -> ChatPromptTemplate:
-    """Get the grade prompt template."""
-    system = """You are a grader assessing relevance of a retrieved document to a user question. 
-        If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant. 
-        Give a binary score 'Yes' or 'No' score to indicate whether the document is relevant to the question."""
+    """Get the refined document relevance grading prompt template."""
+    system = """You are a precision grading system analyzing document-question relevance. Evaluate whether the document excerpt:
+    1. Directly addresses the question's core subject matter
+    2. Contains supporting evidence for potential answers
+    3. Shares contextual overlap with key entities/relationships
+    
+    Response Guidelines:
+    - "Yes" only if document provides substantive, actionable information
+    - "No" for tangential references or incomplete information
+    - Consider semantic relationships, not just keyword matches
+    - Respond strictly with 'Yes' or 'No' without commentary"""
+
     return ChatPromptTemplate.from_messages(
         [
             ("system", system),
             (
                 "human",
-                "Retrieved document: \n\n {document} \n\n User question: {question}",
+                "Document Excerpt:\n{document}\n\n"
+                "User Query: {question}\n\n"
+                "Relevance Judgment (Yes/No):",
             ),
         ]
     )
 
 
 def get_rewrite_prompt() -> ChatPromptTemplate:
-    """Get the rewrite prompt template."""
-    system = """You a question re-writer that converts an input question to a better version that is optimized 
-        for retrieval. Look at the input and try to reason about the underlying semantic intent / meaning."""
+    """Get the enhanced query optimization prompt template."""
+    system = """You are a search optimization engine. Improve the query by:
+    1. Identifying core semantic intent
+    2. Expanding with technical synonyms
+    3. Clarifying ambiguous terms
+    4. Maintaining original question's context
+    
+    Output Format:
+    - Single natural language question
+    - Preserve original language
+    - No markdown or special formatting"""
+
     return ChatPromptTemplate.from_messages(
         [
             ("system", system),
-            (
-                "human",
-                "Here is the initial question: \n\n {question} \n Formulate an improved question.",
-            ),
+            ("human", "Original Question:\n{question}\n\nOptimized Retrieval Query:"),
         ]
     )
 
 
 def get_answer_prompt() -> ChatPromptTemplate:
-    """Get the answer prompt template."""
-    template = """Answer the question based only on the following context:
-    {context}
+    """Get the precision answer generation prompt template."""
+    system = """Generate authoritative answers using these rules:
+    1. Base response strictly on provided context
+    2. Use technical terminology where appropriate
+    3. Maintain objective, academic tone
+    4. Acknowledge document limitations when present
+    5. Structure complex answers with clear reasoning
+    
+    If context is insufficient, respond: 'The documents do not contain sufficient information to answer this question accurately.'"""
 
-    Question: {question}
-    """
-    return ChatPromptTemplate.from_template(template=template)
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", system),
+            (
+                "human",
+                "Contextual Documents:\n{context}\n\n"
+                "Query: {question}\n\n"
+                "Comprehensive Answer:",
+            ),
+        ]
+    )
